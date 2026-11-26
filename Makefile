@@ -1,4 +1,4 @@
-# Requires: devkitARM + libctru (devkitPro), plus makerom and bannertool on PATH
+# Requires devkitARM + libctru (devkitPro), plus makerom and bannertool on PATH
 ifeq ($(strip $(DEVKITARM)),)
 $(error Set DEVKITARM, e.g. export DEVKITARM=/opt/devkitpro/devkitARM)
 endif
@@ -6,20 +6,21 @@ include $(DEVKITARM)/3ds_rules
 
 TARGET   := doors3ds
 NAME     := Hallway 100
-DESC     := Survive 100 rooms
+DESC     := First-person survival horror
 AUTHOR   := You
 CTRULIB  := $(DEVKITPRO)/libctru
 ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
-CFLAGS   := -g -Wall -O2 -mword-relocations -ffunction-sections $(ARCH) \
-            -I$(CTRULIB)/include -D__3DS__
+CFLAGS   := -g -Wall -O3 -ffast-math -mword-relocations -ffunction-sections $(ARCH) \
+            -I$(CTRULIB)/include -Isource -D__3DS__ -std=gnu11
 LDFLAGS  := -specs=3dsx.specs -g $(ARCH) -L$(CTRULIB)/lib
-LIBS     := -lcitro2d -lcitro3d -lctru -lm
+LIBS     := -lctru -lm
 CC       := arm-none-eabi-gcc
+SRC      := source/main.c source/game.c source/game.h
 
 all: $(TARGET).3dsx $(TARGET).cia
 
-$(TARGET).elf: source/main.c
-	$(CC) $(CFLAGS) $< $(LDFLAGS) $(LIBS) -o $@
+$(TARGET).elf: $(SRC)
+	$(CC) $(CFLAGS) source/main.c source/game.c $(LDFLAGS) $(LIBS) -o $@
 
 $(TARGET).smdh: assets/icon.png
 	smdhtool --create "$(NAME)" "$(DESC)" "$(AUTHOR)" $< $@
